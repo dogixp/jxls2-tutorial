@@ -12,6 +12,7 @@ import org.jxls.builder.xml.XmlAreaBuilder;
 import org.jxls.common.CellRef;
 import org.jxls.common.Context;
 import org.jxls.transform.Transformer;
+import org.jxls.transform.poi.PoiTransformer;
 import org.jxls.util.JxlsHelper;
 import org.jxls.util.TransformerFactory;
 import org.springframework.http.MediaType;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.test.common.DummyDataGenerator;
+import com.test.domain.Department;
 import com.test.domain.Employee;
 import com.test.domain.Rows;
 import com.test.function.MyCellUpdater;
@@ -61,8 +63,7 @@ public class JxlsDemoController {
             Context context = new Context();
             context.putVar("employees", employees);
             
-            response.setContentType( MediaType.APPLICATION_OCTET_STREAM_VALUE );
-            response.setHeader( "Content-Disposition", "attachment; filename=" + "object_collection_output.xls" );
+            setResponse( response , "object_collection_output.xls");
             
             JxlsHelper.getInstance().processTemplate(is, response.getOutputStream() , context);
 	    }
@@ -84,8 +85,7 @@ public class JxlsDemoController {
             Context context = new Context();
             context.putVar("employees", employees);
             
-            response.setContentType( MediaType.APPLICATION_OCTET_STREAM_VALUE );
-            response.setHeader( "Content-Disposition", "attachment; filename=" + "formulas_output.xls" );
+            setResponse( response , "formulas_output.xls");
             
             JxlsHelper.getInstance().processTemplateAtCell(is, response.getOutputStream() , context, "Result!A1");
 	    }
@@ -108,8 +108,7 @@ public class JxlsDemoController {
             context.putVar("headers", Arrays.asList("Name", "Birthday", "Payment"));
             context.putVar("data", employees);
             
-            response.setContentType( MediaType.APPLICATION_OCTET_STREAM_VALUE );
-            response.setHeader( "Content-Disposition", "attachment; filename=" + "grid_output.xls" );
+            setResponse( response , "grid_output.xls");
             
             JxlsHelper.getInstance().processGridTemplateAtCell(is, response.getOutputStream() , context, "name,birthDate,payment", "Sheet2!A1");
 	    }
@@ -134,9 +133,8 @@ public class JxlsDemoController {
 			Context context = new Context();
             context.putVar( "employees", employees);
             context.putVar( "rows", rows);
-		
-            response.setContentType( MediaType.APPLICATION_OCTET_STREAM_VALUE );
-            response.setHeader( "Content-Disposition", "attachment; filename=" + "grid_output2.xls" );
+            
+            setResponse( response , "grid_output2.xls");
             
             JxlsHelper.getInstance().processTemplate(is, response.getOutputStream() , context);
 	    }
@@ -154,9 +152,8 @@ public class JxlsDemoController {
 		List<Employee> employees = DummyDataGenerator.generateSampleEmployeeData();
 		
 		try(InputStream is = JxlsDemoController.class.getResourceAsStream("object_collection_xmlbuilder_template.xls")) {
-			
-			response.setContentType( MediaType.APPLICATION_OCTET_STREAM_VALUE );
-	        response.setHeader( "Content-Disposition", "attachment; filename=" + "object_collection_xmlbuilder.xls" );
+	        
+	        setResponse( response , "object_collection_xmlbuilder.xls");
 			
             Transformer transformer = TransformerFactory.createTransformer(is, response.getOutputStream());
             
@@ -185,15 +182,46 @@ public class JxlsDemoController {
 		List<Employee> employees = DummyDataGenerator.generateSampleEmployeeData();
 		
         try(InputStream is = JxlsDemoController.class.getResourceAsStream("updatecell_template.xlsx")) {
-        	
-        	response.setContentType( MediaType.APPLICATION_OCTET_STREAM_VALUE );
-	        response.setHeader( "Content-Disposition", "attachment; filename=" + "updatecell_output.xlsx" );
+	        
+	        setResponse( response , "updatecell_output.xlsx");
             
             Context context = new Context();
             context.putVar( "employees", employees);
             context.putVar( "myCellUpdater", new MyCellUpdater());
             JxlsHelper.getInstance().processTemplate(is, response.getOutputStream() , context);
         }
+	}
+	
+	/**
+	 * Multiple sheets
+	 * @param response
+	 * @throws Exception
+	 */
+	@GetMapping("demo7")
+	public void demo7( HttpServletResponse response ) throws Exception {
+		
+		List<Employee> employees = DummyDataGenerator.generateSampleEmployeeData();
+		try(InputStream is = JxlsDemoController.class.getResourceAsStream("multisheet_template.xls")) {
+	        
+	        setResponse( response , "updatecell_output.xls" );
+			
+			Context context = new Context();
+			context.putVar("employees", employees);
+			context.putVar("sheetNames", Arrays.asList("Emp 1", "Emp 2", "Emp 3", "Emp 4", "Emp 5"));
+			JxlsHelper.getInstance().processTemplate(is, response.getOutputStream() , context);
+			
+		}
+	}
+	
+	/**
+	 * response 다운로드 파일명 지정
+	 * @param response
+	 * @param downFileName
+	 */
+	public void setResponse( HttpServletResponse response  , String downFileName ) {
+		
+		response.setContentType( MediaType.APPLICATION_OCTET_STREAM_VALUE );
+        response.setHeader( "Content-Disposition", "attachment; filename=" + downFileName );
 	}
 }
 
