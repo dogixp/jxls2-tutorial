@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import com.test.common.DummyDataGenerator;
 import com.test.domain.Employee;
 import com.test.domain.Rows;
+import com.test.function.MyCellUpdater;
 
 /**
  * 
@@ -171,6 +172,28 @@ public class JxlsDemoController {
                 
             }
 	    }
+	}
+	
+	/**
+	 * UpdateCell-Command
+	 * @param response
+	 * @throws Exception
+	 */
+	@GetMapping("demo6")
+	public void demo6( HttpServletResponse response ) throws Exception {
+		//dummy data
+		List<Employee> employees = DummyDataGenerator.generateSampleEmployeeData();
+		
+        try(InputStream is = JxlsDemoController.class.getResourceAsStream("updatecell_template.xlsx")) {
+        	
+        	response.setContentType( MediaType.APPLICATION_OCTET_STREAM_VALUE );
+	        response.setHeader( "Content-Disposition", "attachment; filename=" + "updatecell_output.xlsx" );
+            
+            Context context = new Context();
+            context.putVar( "employees", employees);
+            context.putVar( "myCellUpdater", new MyCellUpdater());
+            JxlsHelper.getInstance().processTemplate(is, response.getOutputStream() , context);
+        }
 	}
 }
 
