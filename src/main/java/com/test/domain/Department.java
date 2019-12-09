@@ -20,4 +20,8 @@ public class Department {
 		// 
 		staff.add( employee);
 	}
+
+    public int getHeadcount() {
+        return staff.size();
+    }
 }

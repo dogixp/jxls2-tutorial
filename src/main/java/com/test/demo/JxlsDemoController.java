@@ -11,6 +11,7 @@ import org.jxls.builder.xml.XmlAreaBuilder;
 import org.jxls.common.CellRef;
 import org.jxls.common.Context;
 import org.jxls.transform.Transformer;
+import org.jxls.transform.poi.PoiTransformer;
 import org.jxls.util.JxlsHelper;
 import org.jxls.util.TransformerFactory;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -201,8 +203,8 @@ public class JxlsDemoController {
 		List<Employee> employees = DummyDataGenerator.generateSampleEmployeeData();
 		try(InputStream is = JxlsDemoController.class.getResourceAsStream("multisheet_template.xls")) {
 	        
-	        setResponse( response , "updatecell_output.xls" );
-			
+	        setResponse( response , "multisheet_output.xls" );
+
 			Context context = new Context();
 			context.putVar("employees", employees);
 			context.putVar("sheetNames", Arrays.asList("Emp 1", "Emp 2", "Emp 3", "Emp 4", "Emp 5"));
@@ -212,12 +214,80 @@ public class JxlsDemoController {
 	}
 
 	/**
-	 * NestedCommandDemo
+	 * Multiple sheets2
 	 * @param response
 	 * @throws Exception
 	 */
 	@GetMapping("demo8")
-	public void demo8( HttpServletResponse response ) throws Exception {
+	public void demo8( HttpServletResponse response )  {
+
+		List<Department> departments = DummyDataGenerator.createDepartments();
+
+		try (InputStream is = JxlsDemoController.class.getResourceAsStream( "multisheet_template2.xlsx")){
+
+			setResponse( response , "multisheet_output2.xlsx");
+
+			List<String> sheetNames = new ArrayList<>();
+
+			for( Department d : departments ){
+				sheetNames.add( d.getName());
+			}
+
+			Context context = new Context();
+			context.putVar("departments", departments);
+			context.putVar("sheetNames", sheetNames);
+
+			JxlsHelper.getInstance().processTemplate( is, response.getOutputStream() , context);
+		} catch( Exception e ){
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * multisheet_markup_demo
+	 * @param response
+	 */
+
+	@GetMapping("demo9")
+	public void demo9( HttpServletResponse response ){
+
+		List<Department> departments = DummyDataGenerator.createDepartments();
+
+		try (InputStream is = JxlsDemoController.class.getResourceAsStream( "multisheet_markup_demo.xls")){
+
+			setResponse( response , "multisheet_markup_output.xls");
+
+			List<String> sheetNames = new ArrayList<>();
+
+			for( Department d : departments ){
+				sheetNames.add( d.getName());
+			}
+
+			Context context = PoiTransformer.createInitialContext();
+			context.putVar("departments", departments);
+			context.putVar("sheetNames", sheetNames);
+
+			//with multi sheets it is better to use StandardFormulaProcessor by disabling the FastFormulaProcessor
+			JxlsHelper
+					.getInstance()
+					.setUseFastFormulaProcessor(false)
+					.setDeleteTemplateSheet(true)
+					.processTemplate(is, response.getOutputStream() , context);
+
+			//JxlsHelper.getInstance().processTemplate( is, response.getOutputStream() , context);
+		} catch( Exception e ){
+			e.printStackTrace();
+		}
+
+	}
+
+	/**
+	 * NestedCommandDemo
+	 * @param response
+	 * @throws Exception
+	 */
+	@GetMapping("demo10")
+	public void demo10( HttpServletResponse response ) throws Exception {
 
 		List<Employee> employees = DummyDataGenerator.generateSampleEmployeeData();
 
