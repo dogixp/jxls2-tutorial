@@ -1,6 +1,7 @@
 package com.test.demo;
 
 import com.test.common.DummyDataGenerator;
+import com.test.domain.Department;
 import com.test.domain.Employee;
 import com.test.domain.Rows;
 import com.test.function.MyCellUpdater;
@@ -121,9 +122,9 @@ public class JxlsDemoController {
 		
 		//dummy data
 		List<Employee> employees = DummyDataGenerator.generateSampleEmployeeData();
-		
+
 		//mergeCells dummy data
-		List<Rows> rows = Arrays.asList( new Rows(3, "TEST1") );
+		List<Rows> rows = Arrays.asList( new Rows(5, "YunPD Dev") );
 		
 		try(InputStream is = JxlsDemoController.class.getResourceAsStream("grid_template2.xls")) {
 			
@@ -229,14 +230,14 @@ public class JxlsDemoController {
 			JxlsHelper.getInstance().processTemplate( is, response.getOutputStream() , context);
 		}
 	}
-	
+
 	/**
 	 * response 다운로드 파일명 지정
 	 * @param response
 	 * @param downFileName
 	 */
 	public void setResponse( HttpServletResponse response  , String downFileName ) {
-		
+
 		response.setContentType( MediaType.APPLICATION_OCTET_STREAM_VALUE );
         response.setHeader( HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + downFileName );
 	}
