@@ -12,6 +12,7 @@ import org.jxls.common.Context;
 import org.jxls.transform.Transformer;
 import org.jxls.util.JxlsHelper;
 import org.jxls.util.TransformerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -237,7 +238,7 @@ public class JxlsDemoController {
 	public void setResponse( HttpServletResponse response  , String downFileName ) {
 		
 		response.setContentType( MediaType.APPLICATION_OCTET_STREAM_VALUE );
-        response.setHeader( "Content-Disposition", "attachment; filename=" + downFileName );
+        response.setHeader( HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + downFileName );
 	}
 }
 
