@@ -1,29 +1,25 @@
 package com.test.demo;
 
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
-
+import com.test.common.DummyDataGenerator;
+import com.test.domain.Employee;
+import com.test.domain.Rows;
+import com.test.function.MyCellUpdater;
 import org.jxls.area.Area;
 import org.jxls.builder.AreaBuilder;
 import org.jxls.builder.xml.XmlAreaBuilder;
 import org.jxls.common.CellRef;
 import org.jxls.common.Context;
 import org.jxls.transform.Transformer;
-import org.jxls.transform.poi.PoiTransformer;
 import org.jxls.util.JxlsHelper;
 import org.jxls.util.TransformerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.test.common.DummyDataGenerator;
-import com.test.domain.Department;
-import com.test.domain.Employee;
-import com.test.domain.Rows;
-import com.test.function.MyCellUpdater;
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * 
@@ -210,6 +206,26 @@ public class JxlsDemoController {
 			context.putVar("sheetNames", Arrays.asList("Emp 1", "Emp 2", "Emp 3", "Emp 4", "Emp 5"));
 			JxlsHelper.getInstance().processTemplate(is, response.getOutputStream() , context);
 			
+		}
+	}
+
+	/**
+	 * NestedCommandDemo
+	 * @param response
+	 * @throws Exception
+	 */
+	@GetMapping("demo8")
+	public void demo8( HttpServletResponse response ) throws Exception {
+
+		List<Employee> employees = DummyDataGenerator.generateSampleEmployeeData();
+
+		try (InputStream is = JxlsDemoController.class.getResourceAsStream("nested_command_template.xls")){
+
+			setResponse( response , "nested_command_output.xls");
+			Context context = new Context();
+			context.putVar("employees", employees);
+
+			JxlsHelper.getInstance().processTemplate( is, response.getOutputStream() , context);
 		}
 	}
 	

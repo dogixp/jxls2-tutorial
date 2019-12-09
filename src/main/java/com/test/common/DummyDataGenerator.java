@@ -1,15 +1,13 @@
 package com.test.common;
 
+import com.test.domain.Department;
+import com.test.domain.Employee;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import com.test.domain.Department;
-import com.test.domain.Employee;
 
 public class DummyDataGenerator {
 	  
