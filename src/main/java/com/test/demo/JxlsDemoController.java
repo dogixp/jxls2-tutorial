@@ -1,19 +1,27 @@
 package com.test.demo;
 
 import com.test.common.DummyDataGenerator;
+import com.test.common.SimpleAreaListener;
 import com.test.domain.Department;
 import com.test.domain.Employee;
 import com.test.domain.Rows;
 import com.test.function.MyCellUpdater;
 import org.jxls.area.Area;
+import org.jxls.area.XlsArea;
 import org.jxls.builder.AreaBuilder;
 import org.jxls.builder.xml.XmlAreaBuilder;
+import org.jxls.command.Command;
+import org.jxls.command.EachCommand;
+import org.jxls.command.IfCommand;
+import org.jxls.common.AreaRef;
 import org.jxls.common.CellRef;
 import org.jxls.common.Context;
 import org.jxls.transform.Transformer;
 import org.jxls.transform.poi.PoiTransformer;
 import org.jxls.util.JxlsHelper;
 import org.jxls.util.TransformerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -46,6 +54,8 @@ import java.util.List;
  */
 @Controller
 public class JxlsDemoController {
+
+	static Logger logger = LoggerFactory.getLogger(JxlsDemoController.class);
 	
 	
 	/**
@@ -299,6 +309,58 @@ public class JxlsDemoController {
 
 			JxlsHelper.getInstance().processTemplate( is, response.getOutputStream() , context);
 		}
+	}
+
+	/**
+	 * java code each_if_demo
+	 * @param response
+	 * @throws Exception
+	 */
+
+	@GetMapping("demo11")
+	public void demo11( HttpServletResponse response ) throws Exception {
+
+		List<Department> departments = DummyDataGenerator.createDepartments();
+
+		try (InputStream is = JxlsDemoController.class.getResourceAsStream("each_if_demo_template.xls")){
+
+			setResponse( response , "each_if_demo_output.xls");
+
+			Transformer transformer = TransformerFactory.createTransformer(is, response.getOutputStream() );
+			System.out.println("Creating area");
+			XlsArea xlsArea = new XlsArea("Template!A1:G15", transformer);
+			XlsArea departmentArea = new XlsArea("Template!A2:G12", transformer);
+			EachCommand departmentEachCommand = new EachCommand("department", "departments", departmentArea);
+			XlsArea employeeArea = new XlsArea("Template!A9:F9", transformer);
+			XlsArea ifArea = new XlsArea("Template!A18:F18", transformer);
+			XlsArea elseArea = new XlsArea("Template!A9:F9", transformer);
+			IfCommand ifCommand = new IfCommand("employee.payment <= 2000",
+					ifArea,
+					elseArea);
+			ifArea.addAreaListener(new SimpleAreaListener(ifArea));
+			elseArea.addAreaListener(new SimpleAreaListener(elseArea));
+			employeeArea.addCommand(new AreaRef("Template!A9:F9"), ifCommand);
+			Command employeeEachCommand = new EachCommand("employee", "department.staff", employeeArea);
+			departmentArea.addCommand(new AreaRef("Template!A9:F9"), employeeEachCommand);
+			xlsArea.addCommand(new AreaRef("Template!A2:F12"), departmentEachCommand);
+			Context context = new Context();
+			context.putVar("departments", departments);
+			logger.info("Applying at cell " + new CellRef("Down!A1"));
+			xlsArea.applyAt(new CellRef("Down!A1"), context);
+			xlsArea.processFormulas();
+			logger.info("Setting EachCommand direction to Right");
+			departmentEachCommand.setDirection(EachCommand.Direction.RIGHT);
+			logger.info("Applying at cell " + new CellRef("Right!A1"));
+			xlsArea.reset();
+			xlsArea.applyAt(new CellRef("Right!A1"), context);
+			xlsArea.processFormulas();
+			logger.info("Complete");
+			transformer.write();
+			logger.info("written to file");
+
+		}
+
+
 	}
 
 	/**
